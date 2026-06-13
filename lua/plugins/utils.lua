@@ -18,6 +18,22 @@ return {
           i = {
             ["<C-j>"] = "move_selection_next",
             ["<C-k>"] = "move_selection_previous",
+            ["<C-o>"] = function(prompt_bufnr)
+              local action_state = require("telescope.actions.state")
+              local actions = require("telescope.actions")
+              local entry = action_state.get_selected_entry()
+              actions.close(prompt_bufnr)
+              
+              -- 選択したアイテムのパスを取得
+              local path = entry.path or entry[1]
+              -- ディレクトリでない（ファイルである）場合は、その親ディレクトリを取得
+              if vim.fn.isdirectory(path) == 0 then
+                path = vim.fn.fnamemodify(path, ":h")
+              end
+              
+              -- Oilで開く
+              require("oil").open(path)
+            end,
           },
         },
         vimgrep_arguments = {
@@ -119,8 +135,8 @@ return {
       labels = "asdfghjklqwertyuiopzxcvbnm",
     },
     keys = {
-      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
-      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+      { "f", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+      { "F", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
     },
   },
 
@@ -259,6 +275,8 @@ return {
         preset = "modern", 
         win = { border = "single" },
         trigger_history = true,
+        delay = 0, -- 爆速表示
+        defer = function(ctx) return true end,
         plugins = {
           marks = true,
           registers = true,
@@ -272,56 +290,13 @@ return {
         },
       })
 
-      -- 1. グローバル（全体）で有効なルートマップを登録
+      -- 1. グローバル（全体）ルートマップ
       wk.add({
-        -- 1打目：スペースキーから始まるコンボの案内
-        { "<leader>f", group = "🎯 【検索・ナビ系】へのコマンド入力待ち... [f]" },
-        { "<leader>g", group = "📦 【Git操作・管理系】へのコマンド入力待ち... [g]" },
-        { "<leader>t", group = "🚦 【テスト・検証系】へのコマンド入力待ち... [t]" },
-        { "<leader>gh", group = "🔍 【1マスの差分（Hunk）操作系】へ... [gh]" },
-        
-        -- 1打目：スペース以外の「標準キー」の案内
-        { "g", group = "🚀 【LSP・コード解読系】へのコマンド入力待ち... [g]" },
-        { "z", group = "📺 【画面スクロール・折りたたみ系】への入力待ち... [z]" },
-        
-        -- 💡 解決：文字列の末尾から Lua を勘違いさせる記号を完全に排除しました
-        { "<bracketleft>", group = "⏮️  【前の要素（Git差分など）へ戻る】入力待ち" },
-        { "<bracketright>", group = "⏭️  【次の要素（Git差分など）へ進む】入力待ち" },
-
-        -- 単発キーの案内
-        { "-", desc = "📂 【Oil】テキスト感覚でファイルを爆速編集する" },
-        { "<C-n>", desc = "🌿 【Neo-tree】サイドバーのファイルツリーを開閉" },
-      })
-
-      -- 2. 【Oilの画面専用】のカンペ設定
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "oil",
-        callback = function()
-          wk.add({
-            { "g?", desc = "ℹ️  Oilの全操作コマンドヘルプを表示", buffer = true },
-            { "<CR>", desc = "選択したファイルを開く / ディレクトリに入る", buffer = true },
-            { "-", desc = "1つ上の親ディレクトリ（階層）に戻る", buffer = true },
-            { "_", desc = "プロジェクトのルートディレクトリに一発ジャンプ", buffer = true },
-          })
-        end,
-      })
-
-      -- 3. 【Neo-treeの画面専用】のカンペ設定
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "neo-tree",
-        callback = function()
-          wk.add({
-            { "A", desc = "📁 新規ディレクトリ（フォルダ）を作成", buffer = true },
-            { "a", desc = "📄 新規ファイルを作成", buffer = true },
-            { "d", desc = "🗑️  選択したファイルを削除", buffer = true },
-            { "r", desc = "🏷️  ファイル名をリネーム", buffer = true },
-            { "c", desc = "📋 ファイルをコピー", buffer = true },
-            { "x", desc = "✂️  ファイルを切り取り（移動準備）", buffer = true },
-            { "p", desc = "📥 貼り付け（コピー/移動ファイルの配置）", buffer = true },
-            { "R", desc = "🔄 ツリーの表示を最新状態に更新", buffer = true },
-            { "?", desc = "ℹ️  Neo-treeの全ヘルプを表示", buffer = true },
-          })
-        end,
+        -- スペースキー系の案内
+        { "<leader>f", group = "【検索・ナビ系】へのコマンド入力待ち... [f]" },
+        { "<leader>g", group = "【Git操作・管理系】へのコマンド入力待ち... [g]" },
+        { "<leader>gh", group = "【1マスの差分（Hunk）操作系】へ... [gh]" },
+        { "<leader>t", group = "【テスト・検証系】へのコマンド入力待ち... [t]" },
       })
     end,
   },
