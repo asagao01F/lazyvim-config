@@ -13,7 +13,7 @@ return {
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = { options = { theme = "catppuccin" } },
+    opts = { options = { theme = "auto" } },
   },
 
   -- コマンドライン、通知、ポップアップをモダンにするUIエンジン
