@@ -149,13 +149,12 @@ return {
       "marilari88/neotest-vitest",   -- TS / JS 用 (Vitest)
       "nvim-neotest/neotest-plenary", -- Lua 用
       "rouge8/neotest-rust",         -- Rust 用
+      "nvim-neotest/nvim-nio",
     },
     config = function()
       require("neotest").setup({
         adapters = {
-          require("neotest-jest")({
-            jest_cmd = require("neotest-jest.utils").find_jest_cmd,
-          }),
+          require("neotest-jest")({}),
           require("neotest-vitest"),
           require("neotest-rust"),
         },
