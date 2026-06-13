@@ -221,4 +221,20 @@ return {
       { "<leader>gg", "<cmd>Neogit<cr>", desc = "Neogit Status" },
     }
   },
+  -- 画面下部に次のコマンド候補をガイドする神プラグイン
+  {
+    "folke/which-key.nvim",
+    event = "VeryLazy", -- Neovim起動を重くしないために、裏で遅延ロード
+    init = function()
+      vim.o.timeout = true
+      vim.o.timeoutlen = 300 -- 💡 キーを押してからガイドが出るまでの時間（ミリ秒）
+    end,
+    opts = {
+      -- 2026年現在のモダンな浮き上がりUI設定
+      preset = "modern", 
+      win = {
+        border = "single", -- 綺麗な枠線をつける
+      },
+    },
+  },
 }
