@@ -8,6 +8,7 @@ return {
       { "<leader>fg", "<cmd>Telescope live_grep<cr>", desc = "Live Grep" },
       { "<leader>fb", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
       { "gr", "<cmd>Telescope lsp_references<CR>", desc = "Go to references" },
+      { "<leader>fc", "<cmd>Telescope commands<cr>", desc = "Find Commands" },
     },
     -- 💡 opts を空にせず、以下の快適設定を仕込みます
     opts = {
