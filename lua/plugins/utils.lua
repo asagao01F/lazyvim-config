@@ -167,8 +167,7 @@ return {
       "antlr/antlr4",
       "nvim-treesitter/nvim-treesitter",
       "nvim-neotest/nvim-nio", -- 💡 必須ライブラリを完全配備
-      -- 各言語のアダプター群
-      "rcarriga/neotest-java", -- 💡 Spock (JUnit Platform) / Java を動かす最強コア
+      -- "nvim-neotest/neotest-java", -- 💡 Spock (JUnit Platform) / Java を動かす最強コア
       "haydenmeade/neotest-jest",
       "marilari88/neotest-vitest",
       "rouge8/neotest-rust",
