@@ -49,3 +49,6 @@ keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Scroll up and center" })
 -- 検索移動（n, N）時にマッチした文字を常に画面中央に固定
 keymap.set("n", "n", "nzzzv", { desc = "Next search match and center" })
 keymap.set("n", "N", "Nzzzv", { desc = "Previous search match and center" })
+
+-- ノーマルモードで m を押したとき、押しづらい %（対応する括弧へジャンプ）の挙動にする
+vim.keymap.set("n", "m", "%", { remap = true, desc = "Jump to matching pairs" })
