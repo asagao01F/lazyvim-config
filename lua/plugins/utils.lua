@@ -9,7 +9,36 @@ return {
       { "<leader>fb", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
       { "gr", "<cmd>Telescope lsp_references<CR>", desc = "Go to references" },
     },
-    opts = {},
+    -- 💡 opts を空にせず、以下の快適設定を仕込みます
+    opts = {
+      defaults = {
+        -- ① 検索ウィンドウが開いた状態で「Ctrl + j / k」で上下移動できるようにする
+        mappings = {
+          i = {
+            ["<C-j>"] = "move_selection_next",
+            ["<C-k>"] = "move_selection_previous",
+          },
+        },
+        -- ② 2026年現在のモダン開発で必須の「隠しファイル（.env や .github 等）」も検索対象に含める
+        vimgrep_arguments = {
+          "rg",
+          "--color=never",
+          "--no-heading",
+          "--with-filename",
+          "--line-number",
+          "--column",
+          "--smart-case",
+          "--hidden", -- 💡 これが隠しファイルも検索する魔法のオプション
+          "--glob",
+          "!**/.git/*", -- ただし .git の中身は除外して高速化
+        },
+      },
+      pickers = {
+        find_files = {
+          hidden = true, -- 💡 ファイル名検索（find_files）でも隠しファイルを表示
+        },
+      },
+    },
   },
 
   -- 2. Oil.nvim（テキスト編集のように操作できるファイルエクスプローラ）
