@@ -1,3 +1,4 @@
+
 return {
   -- 超高速な構文ハイライト
   {
@@ -5,13 +6,14 @@ return {
     build = ":TSUpdate",
     config = function()
       require("nvim-treesitter.configs").setup({
+        -- 💡 前のステップで追加した groovy もここに含めています
         ensure_installed = { "lua", "javascript", "typescript", "rust", "go", "python", "groovy" },
         highlight = { enable = true },
       })
     end,
   },
 
-  -- 2026年最新・超高速な補完エンジン
+  -- 補完エンジン
   {
     "saghen/blink.cmp",
     lazy = false,
@@ -29,7 +31,7 @@ return {
     },
   },
 
-  -- LSP 設定 & 自動セットアップ
+  -- LSP 設定 & 自動セットアップ（最新の API に修正）
   {
     "neovim/nvim-lspconfig",
     dependencies = {
@@ -39,19 +41,22 @@ return {
     },
     config = function()
       require("mason").setup()
+
+      -- 💡 修正ポイント: setup_handlers を廃止し、setup({}) の中の handlers に統合しました
       require("mason-lspconfig").setup({
         ensure_installed = { "lua_ls", "ts_ls", "rust_analyzer" },
+        handlers = {
+          -- デフォルトのセットアップ挙動（すべてのLSPにblink.cmpの補完能力を授ける）
+          function(server_name)
+            local capabilities = require("blink.cmp").get_lsp_capabilities()
+            require("lspconfig")[server_name].setup({
+              capabilities = capabilities,
+            })
+          end,
+        },
       })
 
-      local lspconfig = require("lspconfig")
-      require("mason-lspconfig").setup_handlers({
-        function(server_name)
-          local capabilities = require("blink.cmp").get_lsp_capabilities()
-          lspconfig[server_name].setup({ capabilities = capabilities })
-        end,
-      })
-
-      -- LSPのキーバインド（定義ジャンプなど）
+      -- LSPのキーバインド設定（定義ジャンプなど）
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(args)
           local bufnr = args.buf
