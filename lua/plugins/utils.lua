@@ -176,9 +176,9 @@ return {
       require("neotest").setup({
         adapters = {
           -- 💡 Spock / Java 用設定。build.gradle や pom.xml を自動解析
-          require("neotest-java")({
-            force_java_test_runner = "junit-platform",
-          }),
+          -- require("neotest-java")({
+            -- force_java_test_runner = "junit-platform",
+          -- }),
           -- 💡 修正: バージョンアップで廃止された utils.find_jest_cmd のエラーを回避
           require("neotest-jest")({}),
           require("neotest-vitest"),
