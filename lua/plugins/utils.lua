@@ -55,6 +55,25 @@ return {
       vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory with Oil" })
     end,
   },
+  -- 2.5 net-tree
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons",
+      "MunifTanjim/nui.nvim",
+    },
+    keys = {
+      -- Ctrl + n でサイドバーをトグル（開閉）
+      { "<C-n>", "<cmd>Neotree toggle<cr>", desc = "NeoTree Toggle" },
+    },
+    opts = {
+      window = {
+        width = 30,
+      },
+    },
+  },
 
   -- 3. Mini.surround（爆速かつリピート対応の文字囲み・変更・削除）
   {
