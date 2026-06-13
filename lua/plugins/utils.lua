@@ -1,5 +1,7 @@
 return {
+  -- ==========================================================================
   -- 1. Telescope（あいまいファイル検索 & 全ファイル内Grep検索）
+  -- ==========================================================================
   {
     "nvim-telescope/telescope.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
@@ -7,20 +9,17 @@ return {
       { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
       { "<leader>fg", "<cmd>Telescope live_grep<cr>", desc = "Live Grep" },
       { "<leader>fb", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
-      { "gr", "<cmd>Telescope lsp_references<CR>", desc = "Go to references" },
+      { "<leader>gr", "<cmd>Telescope lsp_references<CR>", desc = "Go to references" },
       { "<leader>fc", "<cmd>Telescope commands<cr>", desc = "Find Commands" },
     },
-    -- 💡 opts を空にせず、以下の快適設定を仕込みます
     opts = {
       defaults = {
-        -- ① 検索ウィンドウが開いた状態で「Ctrl + j / k」で上下移動できるようにする
         mappings = {
           i = {
             ["<C-j>"] = "move_selection_next",
             ["<C-k>"] = "move_selection_previous",
           },
         },
-        -- ② 2026年現在のモダン開発で必須の「隠しファイル（.env や .github 等）」も検索対象に含める
         vimgrep_arguments = {
           "rg",
           "--color=never",
@@ -29,26 +28,28 @@ return {
           "--line-number",
           "--column",
           "--smart-case",
-          "--hidden", -- 💡 これが隠しファイルも検索する魔法のオプション
+          "--hidden",
           "--glob",
-          "!**/.git/*", -- ただし .git の中身は除外して高速化
+          "!**/.git/*",
         },
       },
       pickers = {
         find_files = {
-          hidden = true, -- 💡 ファイル名検索（find_files）でも隠しファイルを表示
+          hidden = true,
         },
       },
     },
   },
 
+  -- ==========================================================================
   -- 2. Oil.nvim（テキスト編集のように操作できるファイルエクスプローラ）
+  -- ==========================================================================
   {
     "stevearc/oil.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       require("oil").setup({
-        default_file_explorer = true,
+        default_file_explorer = false, -- 💡 修正: neo-treeと競合してエラーになるのを防ぐ
         columns = { "icon" },
         sync_with_cwd = true,
         view_options = { show_hidden = true },
@@ -56,7 +57,10 @@ return {
       vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory with Oil" })
     end,
   },
-  -- 2.5 net-tree
+
+  -- ==========================================================================
+  -- 2.5 Neo-tree.nvim（サイドバー型のモダンなファイルツリー）
+  -- ==========================================================================
   {
     "nvim-neo-tree/neo-tree.nvim",
     branch = "v3.x",
@@ -66,17 +70,26 @@ return {
       "MunifTanjim/nui.nvim",
     },
     keys = {
-      -- Ctrl + n でサイドバーをトグル（開閉）
       { "<C-n>", "<cmd>Neotree toggle<cr>", desc = "NeoTree Toggle" },
     },
     opts = {
       window = {
         width = 30,
       },
+      filesystem = {
+        -- 💡 拡張設定: サイドバーでも .env などの隠しファイルを見えるようにする
+        filtered_items = {
+          visible = true,
+          hide_dotfiles = false,
+          hide_gitignored = false,
+        },
+      },
     },
   },
 
+  -- ==========================================================================
   -- 3. Mini.surround（爆速かつリピート対応の文字囲み・変更・削除）
+  -- ==========================================================================
   {
     "echasnovski/mini.surround",
     version = false,
@@ -95,7 +108,9 @@ return {
     end,
   },
 
+  -- ==========================================================================
   -- 4. Flash.nvim（新世代EasyMotion、閃光の画面内ジャンプ）
+  -- ==========================================================================
   {
     "folke/flash.nvim",
     event = "VeryLazy",
@@ -109,7 +124,9 @@ return {
     },
   },
 
+  -- ==========================================================================
   -- 5. ToggleTerm（一発で浮かび上がる zsh ポップアップターミナル）
+  -- ==========================================================================
   {
     "akinsho/toggleterm.nvim",
     version = "*",
@@ -139,41 +156,49 @@ return {
       })
     end,
   },
+
+  -- ==========================================================================
+  -- 6. Neotest（Spock / Java / TS 多言語フル対応高速テスト環境）
+  -- ==========================================================================
   {
     "nvim-neotest/neotest",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "antlr/antlr4", -- 構文解析用
+      "antlr/antlr4",
       "nvim-treesitter/nvim-treesitter",
-      -- お使いの言語に合わせてアダプターを追加（ここでは例として主要言語を網羅）
-      "haydenmeade/neotest-jest",     -- TS / JS 用 (Jest)
-      "marilari88/neotest-vitest",   -- TS / JS 用 (Vitest)
-      "nvim-neotest/neotest-plenary", -- Lua 用
-      "rouge8/neotest-rust",         -- Rust 用
-      "nvim-neotest/nvim-nio",
+      "nvim-neotest/nvim-nio", -- 💡 必須ライブラリを完全配備
+      -- 各言語のアダプター群
+      "rcarriga/neotest-java", -- 💡 Spock (JUnit Platform) / Java を動かす最強コア
+      "haydenmeade/neotest-jest",
+      "marilari88/neotest-vitest",
+      "rouge8/neotest-rust",
     },
     config = function()
       require("neotest").setup({
         adapters = {
+          -- 💡 Spock / Java 用設定。build.gradle や pom.xml を自動解析
+          require("neotest-java")({
+            force_java_test_runner = "junit-platform",
+          }),
+          -- 💡 修正: バージョンアップで廃止された utils.find_jest_cmd のエラーを回避
           require("neotest-jest")({}),
           require("neotest-vitest"),
           require("neotest-rust"),
         },
-        -- リッチなUI設定
-        status = { virtual_text = true }, -- コードの横に成否アイコンを表示
-        output = { open_on_run = true },  -- テスト失敗時に自動で詳細バッファを開く
+        status = { virtual_text = true },
+        output = { open_on_run = true },
       })
 
-      -- 爆速テスト実行のキーバインド
       local neotest = require("neotest")
-      -- スペース + tr: カーソルがある「その関数だけ」を実行（これが一番早い！）
       vim.keymap.set("n", "<leader>tr", function() neotest.run.run() end, { desc = "Run nearest test" })
-      -- スペース + tf: 今開いている「ファイル全体」のテストを実行
       vim.keymap.set("n", "<leader>tf", function() neotest.run.run(vim.fn.expand("%")) end, { desc = "Run file tests" })
-      -- スペース + ts: テスト結果のサマリー（VS CodeのようなツリーUI）をトグル開閉
       vim.keymap.set("n", "<leader>ts", function() neotest.summary.toggle() end, { desc = "Toggle test summary" })
     end,
   },
+
+  -- ==========================================================================
+  -- 7. Gitsigns & Neogit（歴史を操るGit完全統合UI）
+  -- ==========================================================================
   {
     "lewis6991/gitsigns.nvim",
     opts = {
@@ -185,7 +210,7 @@ return {
         changedelete = { text = '~' },
         untracked    = { text = '┆' },
       },
-      current_line_blame = true, -- 【プロ仕様】今いる行を「誰が・いつ・何のコミットで変えたか」を薄い文字で自動表示
+      current_line_blame = true,
       on_attach = function(bufnr)
         local gitsigns = require('gitsigns')
         local function map(mode, l, r, opts)
@@ -194,7 +219,6 @@ return {
           vim.keymap.set(mode, l, r, opts)
         end
 
-        -- Hunk（変更の塊）単位での爆速移動
         map('n', ']c', function()
           if vim.wo.diff then vim.cmd.feedkeys(vim.api.nvim_replace_termcodes(']c', true, true, true), 'n') else gitsigns.nav_hunk('next') end
         end, { desc = "Next Git Change" })
@@ -202,9 +226,8 @@ return {
           if vim.wo.diff then vim.cmd.feedkeys(vim.api.nvim_replace_termcodes('[c', true, true, true), 'n') else gitsigns.nav_hunk('prev') end
         end, { desc = "Prev Git Change" })
 
-        -- その行だけの Git 操作
-        map('n', '<leader>ghp', gitsigns.preview_hunk, { desc = "Preview Git Hunk" }) -- 変更前のコードをポップアップ表示
-        map('n', '<leader>ghr', gitsigns.reset_hunk, { desc = "Reset Git Hunk" })     -- その変更だけを元に戻す
+        map('n', '<leader>ghp', gitsigns.preview_hunk, { desc = "Preview Git Hunk" })
+        map('n', '<leader>ghr', gitsigns.reset_hunk, { desc = "Reset Git Hunk" })
       end
     }
   },
@@ -212,29 +235,91 @@ return {
     "NeogitOrg/neogit",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "sindrets/diffview.nvim", -- 美しいDiff（差分）表示に必須
+      "sindrets/diffview.nvim",
       "nvim-telescope/telescope.nvim"
     },
     config = true,
     keys = {
-      -- スペース + gg でいつでも最強のGitコントロール画面を起動
       { "<leader>gg", "<cmd>Neogit<cr>", desc = "Neogit Status" },
     }
   },
-  -- 画面下部に次のコマンド候補をガイドする神プラグイン
+
+  -- ==========================================================================
+  -- 8. Which-key（次に続く系統コマンドを完璧にナビゲートする案内人）
+  -- ==========================================================================
   {
     "folke/which-key.nvim",
-    event = "VeryLazy", -- Neovim起動を重くしないために、裏で遅延ロード
+    event = "VeryLazy",
     init = function()
       vim.o.timeout = true
-      vim.o.timeoutlen = 300 -- 💡 キーを押してからガイドが出るまでの時間（ミリ秒）
+      vim.o.timeoutlen = 300
     end,
-    opts = {
-      -- 2026年現在のモダンな浮き上がりUI設定
-      preset = "modern", 
-      win = {
-        border = "single", -- 綺麗な枠線をつける
-      },
-    },
+    config = function()
+      local wk = require("which-key")
+      wk.setup({
+        preset = "modern", 
+        win = { border = "single" },
+        trigger_history = true,
+        plugins = {
+          marks = true,
+          registers = true,
+          spelling = { enabled = true, suggestions = 20 },
+          presets = {
+            windows = true,
+            nav = true,
+            z = true,
+            g = true,
+          },
+        },
+      })
+
+      -- 💡 Oil と Neo-tree の案内も完全統合した決定版ルートマップ
+      wk.add({
+        -- 1打目：スペースキーから始まるコンボの案内
+        { "<leader>f", group = "🎯 【検索・ナビ系】へのコマンド入力待ち... [f]" },
+        { "<leader>g", group = "📦 【Git操作・管理系】へのコマンド入力待ち... [g]" },
+        { "<leader>t", group = "🚦 【テスト・検証系】へのコマンド入力待ち... [t]" },
+        { "<leader>gh", group = "🔍 【1マスの差分（Hunk）操作系】へ... [gh]" },
+        
+        -- 1打目：スペース以外の「標準キー」の案内
+        { "g", group = "🚀 【LSP・コード解読系】へのコマンド入力待ち... [g]" },
+        { "z", group = "📺 【画面スクロール・折りたたみ系】への入力待ち... [z]" },
+        { "[", group = "⏮️  【前の要素（Git差分など）へ戻る】入力待ち... ["["] },
+        { "]", group = "⏭️  【次の要素（Git差分など）へ進む】入力待ち... []"] },
+
+        -- 💡 新設：Oil.nvim の案内（ノーマルモードで - を押したとき）
+        { "-", desc = "📂 【Oil】テキスト感覚でファイルを爆速編集する" },
+
+        -- 💡 新設：Ctrl + n (Neo-tree) の案内
+        { "<C-n>", desc = "🌿 【Neo-tree】サイドバーのファイルツリーを開閉" },
+
+        -- 💡 新設裏技：Oil の画面を開いている時「だけ」下部に表示される専用カンペ
+        {
+          mode = { "n" },
+          proxy = "<CR>", -- Oil内でのEnter
+          buffer = true,
+          { "g?", desc = "ℹ️  Oilの全操作コマンドヘルプを表示" },
+          { "<CR>", desc = "選択したファイルを開く / ディレクトリに入る" },
+          { "-", desc = "1つ上の親ディレクトリ（階層）に戻る" },
+          { "_", desc = "プロジェクトのルートディレクトリに一発ジャンプ" },
+        },
+
+        -- 💡 新設裏技：Neo-tree の画面にいる時「だけ」下部に表示される専用カンペ
+        {
+          mode = { "n" },
+          buffer = true,
+          -- Neo-tree内の主要なファイル操作キーを可視化
+          { "A", desc = "📁 新規ディレクトリ（フォルダ）を作成" },
+          { "a", desc = "📄 新規ファイルを作成" },
+          { "d", desc = "🗑️  選択したファイルを削除" },
+          { "r", desc = "🏷️  ファイル名をリネーム" },
+          { "c", desc = "📋 ファイルをコピー" },
+          { "x", desc = "✂️  ファイルを切り取り（移動準備）" },
+          { "p", desc = "📥 貼り付け（コピー/切り取りしたファイルの配置）" },
+          { "R", desc = "🔄 ツリーの表示を最新状態に更新（リフレッシュ）" },
+          { "?", desc = "ℹ️  Neo-treeの全ヘルプを表示" },
+        }
+      })
+    end,
   },
 }
